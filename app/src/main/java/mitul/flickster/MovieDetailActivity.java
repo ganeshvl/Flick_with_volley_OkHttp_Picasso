@@ -3,12 +3,14 @@ package mitul.flickster;
 import android.app.Activity;
 import android.app.ProgressDialog;
 import android.content.Context;
+import android.content.Intent;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
+import android.view.View;
 import android.widget.Button;
 import android.widget.ImageView;
 import android.widget.RatingBar;
@@ -30,10 +32,12 @@ import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.io.IOException;
+import java.sql.SQLException;
 import java.util.ArrayList;
 
 import butterknife.ButterKnife;
 import butterknife.InjectView;
+import mitul.flickster.db.MovieDataSource;
 import mitul.flickster.model.Flick;
 
 
@@ -53,18 +57,27 @@ public class MovieDetailActivity extends Activity {
     @InjectView(R.id.PartyButton) Button PartyButton;
     @InjectView (R.id.imageView) ImageView poster;
     private StringBuilder sb;
+    private MovieDataSource mDataSource;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_movie_detail);
         ButterKnife.inject(this);
+        mDataSource = new MovieDataSource(MovieDetailActivity.this);
         String movieUrl = getString(R.string.omdb_url) + getIntent().getStringExtra("MOVIE_TITLE").trim().replace(" ","+")+ getString(R.string.omdb_format);
         //String movieUrl = "http://www.omdbapi.com/?t=we are&y=&plot=full&r=json";
         title.setText(getIntent().getStringExtra("MOVIE_TITLE"));
-        //check_network(movieUrl);
-        use_volley(movieUrl);
+        check_network(movieUrl);
+        //use_volley(movieUrl);
         //use_json_object(movieUrl);
+        PartyButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                //loadMovieData();
+                startActivity(new Intent(MovieDetailActivity.this, MovieListActivity.class));
+            }
+        });
     }
 
     private void use_json_object(String movieUrl) {
@@ -98,7 +111,7 @@ public class MovieDetailActivity extends Activity {
     }
 
     private void use_volley(String movieUrl) {
-       Toast.makeText(MovieDetailActivity.this,"Using Volley",Toast.LENGTH_LONG).show();
+       Toast.makeText(MovieDetailActivity.this, "Using Volley", Toast.LENGTH_LONG).show();
 
         if(isNetworkAvailable()) {
             pDialog = new ProgressDialog(this);
@@ -240,6 +253,18 @@ public class MovieDetailActivity extends Activity {
         }
     }
 
+    @Override
+    protected void onResume(){
+        super.onResume();
+        try {
+            mDataSource.open();
+            Log.v(TAG,"---------- Database succesfully created -------------");
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+
+    }
+
     private Flick getDetails(String data) throws JSONException {
         JSONObject omdb = new JSONObject(data);
         Flick flick = new Flick();
@@ -263,5 +288,17 @@ public class MovieDetailActivity extends Activity {
         flick.setMetascore(omdb.getString("Metascore"));
         movie_list.add(flick);
         return flick;
+    }
+
+    private void loadMovieData() {
+        Log.v(TAG,"-------Trying----------");
+        mDataSource.insertMovie(movie);
+        Log.v(TAG, "-------Trying----------");
+    }
+
+    @Override
+    protected void onPause(){
+        super.onPause();
+        mDataSource.close();
     }
 }

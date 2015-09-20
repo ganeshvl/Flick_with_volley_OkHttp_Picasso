@@ -32,7 +32,7 @@ public class MovieDataSource {
         mDatabase.close();
     }
 
-    public void inserForecast(Flick flick){
+    public void insertMovie(Flick flick){
         mDatabase.beginTransaction();
         try {
             ContentValues values = new ContentValues();
@@ -52,19 +52,16 @@ public class MovieDataSource {
             mDatabase.endTransaction();
         }
     }
-
-    public Cursor selectAllTemperatures(){
+    public Cursor selectAllMovies(){
         Cursor cursor = mDatabase.query(
-                MovieHelper.TABLE_MOVIES, // table
-                new String[] { MovieHelper.COLUMN_IMAGE,MovieHelper.COLUMN_TITLE,MovieHelper.COLUMN_CONTENT,
-                        MovieHelper.COLUMN_PLOT,MovieHelper.COLUMN_GENRE,MovieHelper.COLUMN_RELEASE,MovieHelper.COLUMN_RATING
-                ,MovieHelper.COLUMN_CAST,MovieHelper.COLUMN_DIRECTOR}, // column names
+                MovieHelper.TABLE_MOVIES,
+                new String[] { MovieHelper.COLUMN_IMAGE }, // column names
                 null, // where clause
                 null, // where params
                 null, // groupby
                 null, // having
                 null  // orderby
-        );
+        ) ;
         return cursor;
     }
 
