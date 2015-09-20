@@ -1,0 +1,9 @@
+<resources>
+    <string name="app_name">Flickster</string>
+
+    <string name="hello_world">Hello world!</string>
+    <string name="action_settings">Settings</string>
+    <string name="title_activity_movie_detail">MovieDetailActivity</string>
+    <string name="omdb_url">http://www.omdbapi.com/?t=</string>
+    <string name="omdb_format"><![CDATA[&y=&plot=full&r=json]]></string>
+</resources>

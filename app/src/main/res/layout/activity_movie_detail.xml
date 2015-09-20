@@ -1,0 +1,132 @@
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+                xmlns:tools="http://schemas.android.com/tools"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:background="#27ae60"
+                tools:context="mitul.flickz.Movie">
+    <ImageView
+        android:layout_width="match_parent"
+        android:layout_height="525dp"
+        android:id="@+id/imageView"
+        android:layout_alignParentTop="true"
+        android:layout_alignParentLeft="true"
+        android:layout_alignParentStart="false"
+        android:adjustViewBounds="true"
+        android:scaleType="fitXY"
+        android:background="@drawable/minions"/>
+
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:textAppearance="?android:attr/textAppearanceMedium"
+        android:text="Cast"
+        android:id="@+id/Cast"
+        android:layout_below="@+id/LongPlot"
+        android:paddingLeft="@dimen/activity_horizontal_margin"
+        android:textColor="@android:color/white"
+        android:textSize="25dp"
+        android:layout_marginTop="7dp"/>
+
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:textAppearance="?android:attr/textAppearanceMedium"
+        android:text="Director"
+        android:id="@+id/Director"
+        android:layout_below="@+id/Cast"
+        android:paddingLeft="@dimen/activity_horizontal_margin"
+        android:textColor="@android:color/white"
+        android:textSize="25dp"
+        android:layout_marginTop="8dp"/>
+
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:textAppearance="?android:attr/textAppearanceMedium"
+        android:text="Release Date"
+        android:textColor="@android:color/white"
+        android:id="@+id/release_date"
+        android:layout_below="@+id/genre"
+        android:layout_marginTop="8dp"
+        android:paddingLeft="@dimen/activity_horizontal_margin"
+        android:textSize="25dp" />
+
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:textAppearance="?android:attr/textAppearanceMedium"
+        android:layout_below="@+id/MovieTitle"
+        android:text = "Genre"
+        android:textColor="@android:color/white"
+        android:id="@+id/genre"
+        android:paddingLeft="@dimen/activity_horizontal_margin"
+        android:layout_marginTop="6dp"
+        android:textSize="25dp" />
+
+    <RatingBar
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:id="@+id/ratingBar"
+        style="@style/AppTheme"
+        android:layout_below="@+id/Director"
+        android:layout_centerHorizontal="true"
+        android:layout_marginTop="8dp"/>
+
+    <Button
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Create Party"
+        android:id="@+id/PartyButton"
+        android:background="#40ffffff"
+        android:textColor="@android:color/white"
+        android:paddingLeft="15dp"
+        android:paddingRight="15dp"
+        android:paddingTop="10dp"
+        android:paddingBottom="10dp"
+        android:translationZ="@dimen/activity_horizontal_margin"
+        android:layout_below="@+id/ratingBar"
+        android:layout_centerHorizontal="true"
+        android:textSize="25dp"/>
+
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:textAppearance="?android:attr/textAppearanceMedium"
+        android:text="Title"
+        android:id="@+id/MovieTitle"
+        android:layout_centerHorizontal="true"
+        android:layout_below="@+id/imageView"
+        android:layout_marginTop="8dp"
+        android:textColor="@android:color/white"
+        android:textSize="38sp" />
+
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:textAppearance="?android:attr/textAppearanceMedium"
+        android:text="Content type"
+        android:id="@+id/ContentType"
+        android:textColor="@android:color/white"
+        android:layout_below="@+id/release_date"
+        android:paddingLeft="@dimen/activity_horizontal_margin"
+        android:layout_marginTop="8dp"
+        android:textSize="25dp" />
+
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:textAppearance="?android:attr/textAppearanceMedium"
+        android:text="Long Plot"
+        android:id="@+id/LongPlot"
+        android:paddingRight="@dimen/activity_horizontal_margin"
+        android:textColor="@android:color/white"
+        android:layout_below="@+id/ContentType"
+        android:layout_marginTop="8dp"
+        android:paddingLeft="@dimen/activity_horizontal_margin"
+        android:textSize="25dp" />
+
+
+
+</RelativeLayout>
+
+
