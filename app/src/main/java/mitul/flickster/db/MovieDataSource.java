@@ -45,6 +45,7 @@ public class MovieDataSource {
             values.put(MovieHelper.COLUMN_RATING,flick.getImdbRating());
             values.put(MovieHelper.COLUMN_CAST,flick.getActors());
             values.put(MovieHelper.COLUMN_DIRECTOR,flick.getDirector());
+            values.put(MovieHelper.COLUMN_IMDB,flick.getImdbId());
             mDatabase.insert(MovieHelper.TABLE_MOVIES, null, values);
             mDatabase.setTransactionSuccessful();
         }
@@ -52,10 +53,24 @@ public class MovieDataSource {
             mDatabase.endTransaction();
         }
     }
+
+
+    /*
+     * UPDATE
+     */
+    public int updateRating(String rating,String id) {
+        String whereClause = MovieHelper.COLUMN_IMDB + " = ? ";
+        ContentValues values = new ContentValues();
+        values.put(MovieHelper.COLUMN_RATING, rating);
+        return mDatabase.update(MovieHelper.TABLE_MOVIES, values, whereClause ,new String[]{ id });
+    }
+
+
+
     public Cursor selectAllMovies(){
         Cursor cursor = mDatabase.query(
                 MovieHelper.TABLE_MOVIES,
-                new String[] { MovieHelper.COLUMN_IMAGE }, // column names
+                null, // column names
                 null, // where clause
                 null, // where params
                 null, // groupby

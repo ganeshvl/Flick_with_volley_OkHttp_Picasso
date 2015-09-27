@@ -4,6 +4,10 @@
 
     <uses-permission android:name="android.permission.INTERNET" />
     <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
+    <uses-permission android:name="android.permission.GET_ACCOUNTS" />
+    <uses-permission android:name="android.permission.USE_CREDENTIALS" />
+    <uses-permission android:name="android.permission.READ_CONTACTS" />
+    <uses-permission android:name="android.permission.WRITE_CONTACTS" />
 
     <application
         android:allowBackup="true"
@@ -26,6 +30,18 @@
         <activity
             android:name=".MovieListActivity"
             android:label="@string/title_activity_movie_list" >
+        </activity>
+        <activity
+            android:name=".SuggestionActivity"
+            android:label="@string/title_activity_suggestion" >
+        </activity>
+        <activity
+            android:name=".MyMovieListActivity"
+            android:label="@string/title_activity_my_movie_list" >
+        </activity>
+        <activity
+            android:name=".PartyActivity"
+            android:label="@string/title_activity_party" >
         </activity>
     </application>
 

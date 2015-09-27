@@ -27,6 +27,24 @@ public class Flick implements Parcelable{
     private String type;
     private String response;
     private String country;
+    private String imdbId;
+    private String short_plot;
+
+    public Flick() {
+
+    }
+
+    public void setShort_plot(){
+        if (getPlot().length() > 50){
+            this.short_plot = getPlot().substring(0,50)+"...";
+        }
+        else{
+            this.short_plot = getPlot();
+        }
+    }
+    public String getShort_plot(){
+        return this.short_plot;
+    }
 
     public String getImdbId() {
         return imdbId;
@@ -36,7 +54,6 @@ public class Flick implements Parcelable{
         this.imdbId = imdbId;
     }
 
-    private String imdbId;
 
     public String getRuntime() {
         return runtime;
@@ -193,6 +210,42 @@ public class Flick implements Parcelable{
 
     @Override
     public void writeToParcel(Parcel dest, int flags) {
+        dest.writeString(title);
+        dest.writeString(imdbId);
+        dest.writeString(rated);
+        dest.writeString(plot);
+        dest.writeString(short_plot);
+        dest.writeString(genre);
+        dest.writeString(director);
+        dest.writeString(actors);
+        dest.writeString(poster);
+        dest.writeFloat(imdbRating);
+        dest.writeString(released);
 
     }
+    public Flick(Parcel in){
+        title = in.readString();
+        imdbId = in.readString();
+        rated = in.readString();
+        plot = in.readString();
+        short_plot = in.readString();
+        genre = in.readString();
+        director= in.readString();
+        actors = in.readString();
+        poster = in.readString();
+        imdbRating = in.readFloat();
+        released = in.readString();
+    }
+
+    public static final Creator<Flick> CREATOR = new Creator<Flick>() {
+        @Override
+        public Flick createFromParcel(Parcel source) {
+            return new Flick(source);
+        }
+
+        @Override
+        public Flick[] newArray(int size) {
+            return new Flick[size];
+        }
+    };
 }

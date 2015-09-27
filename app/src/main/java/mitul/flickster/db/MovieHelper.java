@@ -9,9 +9,11 @@ import android.database.sqlite.SQLiteOpenHelper;
  */
 public class MovieHelper extends SQLiteOpenHelper {
 
-    private static final String DB_NAME = "movies.db";
+    //private static final String DB_NAME = "movies.db";
+    private static final String DB_NAME = "movies1.db";
     public static final String TABLE_MOVIES = "MOVIES";
     public static final String COLUMN_ID = "_ID";
+    public static final String COLUMN_IMDB = "IMDB";
     public static final String COLUMN_TITLE = "TITLE";
     public static final String COLUMN_IMAGE = "IMAGE";
     public static final String COLUMN_CONTENT = "CONTENT";
@@ -34,6 +36,7 @@ public class MovieHelper extends SQLiteOpenHelper {
                     COLUMN_RELEASE + " TEXT, " +
                     COLUMN_RATING + " TEXT, " +
                     COLUMN_CAST + " TEXT, " +
+                    COLUMN_IMDB + " TEXT, " +
                     COLUMN_DIRECTOR + " TEXT)";
 
     public MovieHelper(Context context) {
