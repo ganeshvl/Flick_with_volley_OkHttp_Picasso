@@ -7,11 +7,11 @@ import android.os.Bundle;
 import android.util.Log;
 import android.view.View;
 import android.widget.Button;
-import android.widget.ImageView;
 import android.widget.RatingBar;
 import android.widget.TextView;
 
-import com.squareup.picasso.Picasso;
+import com.android.volley.toolbox.ImageLoader;
+import com.android.volley.toolbox.NetworkImageView;
 
 import java.sql.SQLException;
 
@@ -19,6 +19,7 @@ import butterknife.ButterKnife;
 import butterknife.InjectView;
 import mitul.flickster.db.MovieDataSource;
 import mitul.flickster.model.Flick;
+import mitul.flickster.services.MySingleton;
 
 
 public class MovieDetailActivity extends Activity {
@@ -34,7 +35,8 @@ public class MovieDetailActivity extends Activity {
     @InjectView(R.id.Director) TextView director;
     @InjectView(R.id.ratingBar) RatingBar ratingBar;
     @InjectView(R.id.PartyButton) Button PartyButton;
-    @InjectView (R.id.imageView) ImageView poster;
+    @InjectView (R.id.imageView)
+    NetworkImageView poster;
     private MovieDataSource mDataSource;
     private float current_rating ;
     private Flick myObject;
@@ -71,6 +73,7 @@ public class MovieDetailActivity extends Activity {
         View.OnClickListener listener = new View.OnClickListener() {
             @Override
             public void onClick(View v) {
+                Log.v(TAG,ratingBar.getRating()+"");
                 //mDataSource.updateRating(current_rating + "", myObject.getImdbId());
             }
         };
@@ -241,7 +244,9 @@ public class MovieDetailActivity extends Activity {
     }
 */
     private void updateDisplay(Flick movie) {
-        Picasso.with(MovieDetailActivity.this).load(movie.getPoster()).into(poster);
+        ImageLoader imL = MySingleton.getInstance(this).getImageLoader();
+        poster.setImageUrl(movie.getPoster(), imL);
+        //Picasso.with(MovieDetailActivity.this).load(movie.getPoster()).into(poster);
         title.setText(movie.getTitle());
 
         if (movie.getPlot().length() >= 375) {
@@ -254,7 +259,7 @@ public class MovieDetailActivity extends Activity {
         director.setText("Director: " + movie.getDirector());
         release_date.setText("Released: " + movie.getReleased());
         Genre.setText("Genre: " + movie.getGenre());
-        ratingBar.setRating(movie.getImdbRating() / 2);
+        ratingBar.setRating(movie.getImdbRating());
         ContentType.setText(movie.getRated());
         title.setText(movie.getTitle());
 

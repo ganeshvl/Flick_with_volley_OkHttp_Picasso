@@ -4,6 +4,7 @@ import android.app.Activity;
 import android.app.ProgressDialog;
 import android.content.Intent;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
@@ -15,6 +16,9 @@ import java.util.ArrayList;
 
 import butterknife.ButterKnife;
 import butterknife.InjectView;
+import mitul.flickster.handler.ApiCallHandler;
+import mitul.flickster.handler.DatabaseHandler;
+import mitul.flickster.handler.RequestHandler;
 import mitul.flickster.model.Flick;
 
 
@@ -52,11 +56,43 @@ public class IndexActivity extends Activity {
             public void onClick(View v) {
                 String search_term = movie_title.getText().toString();
                 //String movieUrl = "http://www.omdbapi.com/?s=" + search_term.trim().replace(" ","+")+ getString(R.string.omdb_format);
+                /*
                 Intent myIntent;
                 myIntent = new Intent(v.getContext(),SuggestionActivity.class);
                 myIntent.putExtra(SEARCH_TERM,search_term);
                 startActivity(myIntent);
+                */
+                DatabaseHandler h1 = new DatabaseHandler(getApplicationContext());
+                //h1.handleRequest(search_term);
+                RequestHandler h2 = new ApiCallHandler();
+                h1.setSuccessor(h2);
+                int i= h1.handleRequest(search_term);
+                if(i == 1){
+                    Flick f = h1.fetch_movie(search_term);
+                    ArrayList<Flick> list = new ArrayList<>();
+                    list = h1.getMovie_list();
+                    //
+                    //Intent intent1 = new Intent(v.getContext(),MyMovieListActivity.class);
+                    //intent1.putExtra("data", new MovieWrapper(list));
+                    //startActivity(intent1);
+                    Intent mIntent = new Intent(IndexActivity.this, MyMovieListActivity.class);
+                    mIntent.putParcelableArrayListExtra("Data", list);
+                    startActivity(mIntent);
 
+                    //
+                    //System.out.println(f.getActors());
+                    //Intent myIntent;
+                    //myIntent = new Intent(v.getContext(),MyMovieListActivity.class);
+                    //startActivity(myIntent);
+                    //
+                }
+                else if (i==0) {
+                    Log.v(TAG, String.valueOf(i));
+                    Intent myIntent;
+                    myIntent = new Intent(v.getContext(),SuggestionActivity.class);
+                    myIntent.putExtra(SEARCH_TERM,search_term);
+                    startActivity(myIntent);
+                }
 
                 //myIntent = new Intent(v.getContext(), MovieDetailActivity.class);
                 //myIntent.putExtra(MOVIE_TITLE,search_term);

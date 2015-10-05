@@ -16,6 +16,7 @@ import android.widget.ArrayAdapter;
 import android.widget.ListView;
 
 import com.android.volley.VolleyError;
+import com.android.volley.toolbox.ImageLoader;
 import com.android.volley.toolbox.JsonObjectRequest;
 import com.squareup.okhttp.Call;
 import com.squareup.okhttp.Callback;
@@ -29,6 +30,7 @@ import org.json.JSONObject;
 import java.io.IOException;
 import java.sql.SQLException;
 import java.util.ArrayList;
+import java.util.Iterator;
 
 import mitul.flickster.adapter.MovieAdapter;
 import mitul.flickster.db.MovieDataSource;
@@ -55,13 +57,39 @@ public class MyMovieListActivity extends Activity {
         mDataSource = new MovieDataSource(MyMovieListActivity.this);
         movieDatabase = new ArrayList<Flick>();
         mTitles = new ArrayList<String>();
+
         String movie_name = getIntent().getStringExtra("my_movie");
-        Log.v("tag", movie_name);
-        use_json_object("http://www.omdbapi.com/?t=" + movie_name.trim().replace(" ", "+") + "&y=&plot=full&r=json");
+        if(movie_name != null){
+            Log.v("tag", movie_name);
+            use_json_object("http://www.omdbapi.com/?t=" + movie_name.trim().replace(" ", "+") + "&y=&plot=full&r=json");
+            setListenerOnListView();
+        }
+        //Log.v("tag", movie_name);
+        //use_json_object("http://www.omdbapi.com/?t=" + movie_name.trim().replace(" ", "+") + "&y=&plot=full&r=json");
+
         //check_network("http://www.omdbapi.com/?t=" + movie_name.trim().replace(" ", "+") + "&y=&plot=full&r=json");
        // Log.v("tag", movie.getGenre());
-        //updateUI();
-        setListenerOnListView();
+        else {
+
+            //MovieWrapper dw = (MovieWrapper) getIntent().getSerializableExtra("data");
+            //ArrayList<Flick> list = dw.getData();
+
+            //MovieAdapter movie_adapter = new MovieAdapter(MyMovieListActivity.this,list);
+            //myMovieListView.setAdapter(movie_adapter);
+            Bundle bdl = getIntent().getExtras();
+            ArrayList<Flick> mArraylist1 = bdl.getParcelableArrayList("Data");
+            Iterator<Flick> itr = mArraylist1.iterator();
+            while(itr.hasNext()){
+                Flick flick = itr.next();
+                System.out.println(flick.getTitle());
+            }
+            MovieAdapter movie_adapter = new MovieAdapter(MyMovieListActivity.this,mArraylist1);
+            myMovieListView.setAdapter(movie_adapter);
+
+
+            //updateList();
+            setListenerOnListView();
+        }
     }
     private void setListenerOnListView() {
         myMovieListView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
@@ -81,26 +109,38 @@ public class MyMovieListActivity extends Activity {
         });
     }
 
-    private void updateUI() {
-        Cursor cursor = mDataSource.selectAllMovies();
-        updateList(cursor);
-    }
-    private void updateList(Cursor cursor) {
-        mTitles.clear();
+
+    private void updateList() {
+        MovieDataSource my_movieDataSource = new MovieDataSource(MyMovieListActivity.this);
+        try {
+            my_movieDataSource.open();
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        Cursor cursor = my_movieDataSource.selectAllMovies();
+        ArrayList<Flick> Database = new ArrayList<Flick>();
         cursor.moveToFirst();
         while(!cursor.isAfterLast()){
-            int i = cursor.getColumnIndex(MovieHelper.COLUMN_RATING);
-            mTitles.add(cursor.getString(i));
-            //Toast.makeText(MovieListActivity.this,
-            // String.valueOf(cursor.getString(cursor.getColumnIndex(MovieHelper.COLUMN_RATING))),
-            // Toast.LENGTH_LONG).show();
+            Flick flick = new Flick();
+            //int i = cursor.getColumnIndex(MovieHelper.COLUMN_TITLE);
+            //mTitles.add(cursor.getString(i));
+            flick.setTitle(cursor.getString(cursor.getColumnIndex(MovieHelper.COLUMN_TITLE)));
+            flick.setRated(cursor.getString(cursor.getColumnIndex(MovieHelper.COLUMN_CONTENT)));
+            flick.setReleased(cursor.getString(cursor.getColumnIndex(MovieHelper.COLUMN_RELEASE)));
+            flick.setGenre(cursor.getString(cursor.getColumnIndex(MovieHelper.COLUMN_GENRE)));
+            flick.setDirector(cursor.getString(cursor.getColumnIndex(MovieHelper.COLUMN_DIRECTOR)));
+            flick.setActors(cursor.getString(cursor.getColumnIndex(MovieHelper.COLUMN_CAST)));
+            flick.setPlot(cursor.getString(cursor.getColumnIndex(MovieHelper.COLUMN_PLOT)));
+            flick.setPoster(cursor.getString(cursor.getColumnIndex(MovieHelper.COLUMN_IMAGE)));
+            flick.setImdbRating(cursor.getString(cursor.getColumnIndex(MovieHelper.COLUMN_RATING)));
+            flick.setImdbId(cursor.getString(cursor.getColumnIndex(MovieHelper.COLUMN_IMDB)));
+            flick.setShort_plot();
+            Database.add(flick);
             cursor.moveToNext();
         }
-        ArrayAdapter<String> adapter = new ArrayAdapter<String>(MyMovieListActivity.this,
-                android.R.layout.simple_list_item_1,
-                mTitles);
-
-        myMovieListView.setAdapter(adapter);
+        my_movieDataSource.close();
+        MovieAdapter movie_adapter = new MovieAdapter(MyMovieListActivity.this,Database);
+        myMovieListView.setAdapter(movie_adapter);
     }
 
     private void use_json_object(String movieUrl) {
@@ -164,6 +204,8 @@ public class MyMovieListActivity extends Activity {
         });
         // Add the request to the queue
         MySingleton.getInstance(this).addToRequestQueue(jsObjRequest);
+        ImageLoader imL = MySingleton.getInstance(this).getImageLoader();
+
     }
 
     private void check_network(String movieUrl) {

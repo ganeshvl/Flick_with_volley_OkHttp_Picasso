@@ -23,6 +23,16 @@ public class MovieDataSource {
         mMovieHelper = new MovieHelper(mContext);
     }
 
+    public MovieDataSource() {
+
+    }
+
+    public void setContext(Context context){
+        this.mContext = context;
+        this.mMovieHelper = new MovieHelper(context);
+    }
+
+
     //open
     public void open() throws SQLException {
         mDatabase = mMovieHelper.getWritableDatabase();

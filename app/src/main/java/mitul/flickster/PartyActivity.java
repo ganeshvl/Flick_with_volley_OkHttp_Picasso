@@ -41,6 +41,7 @@ public class PartyActivity  extends Activity implements AdapterView.OnItemSelect
     public final int PICK_CONTACTS = 100;
     private TextView people;
     private Button deleteButton;
+    public static final String TAG = PartyActivity.class.getSimpleName();
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -257,8 +258,6 @@ public class PartyActivity  extends Activity implements AdapterView.OnItemSelect
             ops.clear();
         }
     }
-
-
     private void initialize() {
         date = (EditText) findViewById(R.id.date);
         time = (EditText) findViewById(R.id.time);
@@ -278,7 +277,6 @@ public class PartyActivity  extends Activity implements AdapterView.OnItemSelect
         };
         contacts.setOnClickListener(listener);
     }
-
 
     public void setCurrentDateOnView() {
         String dateFormat = "MM/dd/yyyy";
@@ -319,38 +317,36 @@ public class PartyActivity  extends Activity implements AdapterView.OnItemSelect
         new TimePickerDialog(PartyActivity.this,my_time,c.get(Calendar.HOUR),c.get(Calendar.MINUTE),false).show();
     }
 
-
-
-
     @Override
     public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
         String selectedItem = parent.getItemAtPosition(position).toString();
         Toast.makeText(PartyActivity.this,
                 String.valueOf(selectedItem),
                 Toast.LENGTH_LONG).show();
-
     }
 
     @Override
     public void onNothingSelected(AdapterView<?> parent) {
+
     }
 
     @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
-        Uri uri = data.getData();
-        Cursor cursor = getContentResolver().query(uri, null, null, null, null);
-        cursor.moveToFirst();
-        int  contactIndex =cursor.getColumnIndex(ContactsContract.Contacts.DISPLAY_NAME);
-        movie_party.setContactName(cursor.getString(contactIndex));
-        ArrayList<String> contact_list = movie_party.getContacts();
-        Iterator<String> itr = contact_list.iterator();
-        String con = "";
-        while(itr.hasNext()){
-            con = con + itr.next()+ " ";
+        if (resultCode == RESULT_OK) {
+            Uri uri = data.getData();
+            Cursor cursor = getContentResolver().query(uri, null, null, null, null);
+            cursor.moveToFirst();
+            int contactIndex = cursor.getColumnIndex(ContactsContract.Contacts.DISPLAY_NAME);
+            movie_party.setContactName(cursor.getString(contactIndex));
+            ArrayList<String> contact_list = movie_party.getContacts();
+            Iterator<String> itr = contact_list.iterator();
+            String con = "";
+            while (itr.hasNext()) {
+                con = con + itr.next() + " ";
+            }
+            people.setText(con);
         }
-        people.setText(con);
+
     }
-
-
 
 }

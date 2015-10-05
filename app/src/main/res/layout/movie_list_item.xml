@@ -8,7 +8,7 @@
                 android:descendantFocusability="blocksDescendants"
     >
 
-    <ImageButton
+    <com.android.volley.toolbox.NetworkImageView
         android:layout_width="220dp"
         android:layout_height="230dp"
         android:id="@+id/movie_image"
