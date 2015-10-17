@@ -151,12 +151,15 @@ public class MyMovieListActivity extends Activity {
                         try {
                             Log.v("json",response.getString("Director"));
                             movie = getDetails(response);
+                            //mDataSource.deleteAll();
                             loadMovieData();
                             Movielist.add(movie.getDirector());
                             Cursor cursor = mDataSource.selectAllMovies();
                             mTitles.clear();
-                            cursor.moveToFirst();
-                            while(!cursor.isAfterLast()){
+                            //cursor.moveToFirst();
+                            cursor.moveToLast();
+                            while(!cursor.isBeforeFirst()){
+                            //while(!cursor.isAfterLast()){
                                 Flick flick = new Flick();
                                 //int i = cursor.getColumnIndex(MovieHelper.COLUMN_TITLE);
                                 //mTitles.add(cursor.getString(i));
@@ -172,7 +175,8 @@ public class MyMovieListActivity extends Activity {
                                 flick.setImdbId(cursor.getString(cursor.getColumnIndex(MovieHelper.COLUMN_IMDB)));
                                 flick.setShort_plot();
                                 movieDatabase.add(flick);
-                                cursor.moveToNext();
+                                //cursor.moveToNext();
+                                cursor.moveToPrevious();
                             }
                             //MovieAdapter movie_adapter = new MovieAdapter(MyMovieListActivity.this,movieDatabase);
                             //myMovieListView.setAdapter(movie_adapter);
@@ -312,7 +316,7 @@ public class MyMovieListActivity extends Activity {
     private Flick getDetails(JSONObject omdb) throws JSONException {
         //JSONObject omdb = new JSONObject(data);
         Flick flick = new Flick();
-        flick.setTitle(omdb.getString("Title"));
+        flick.setTitle(omdb.getString("Title").toLowerCase().replace("-"," "));
         flick.setImdbRating(omdb.getString("imdbRating"));
         flick.setReleased(omdb.getString("Released"));
         flick.setRated(omdb.getString("Rated"));

@@ -169,7 +169,7 @@ public class Flick implements Parcelable{
 
     public Float getImdbRating() {return imdbRating;}
 
-    public void setImdbRating(String imdbRating) {this.imdbRating = Float.parseFloat(imdbRating)/2;}
+    public void setImdbRating(String imdbRating) {this.imdbRating = Float.parseFloat(imdbRating);}
 
     public String getType() {
         return type;

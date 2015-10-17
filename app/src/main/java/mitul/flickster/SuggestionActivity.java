@@ -1,7 +1,10 @@
 package mitul.flickster;
 
 import android.app.Activity;
+import android.content.Context;
 import android.content.Intent;
+import android.net.ConnectivityManager;
+import android.net.NetworkInfo;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.View;
@@ -18,6 +21,7 @@ import org.json.JSONObject;
 
 import java.util.ArrayList;
 
+import mitul.flickster.fragment.AlertDialogFragment;
 import mitul.flickster.services.MySingleton;
 
 
@@ -47,7 +51,7 @@ public class SuggestionActivity extends Activity {
                 Intent myIntent = new Intent(view.getContext(), MyMovieListActivity.class);
                 //myIntent.putExtra(MOVIE_OBJECT,flick_list[position]);
                 //myIntent.putExtra(MOVIE_OBJECT,sample_movies.get(position));
-                myIntent.putExtra("my_movie",(String)parent.getItemAtPosition(position));
+                myIntent.putExtra("my_movie", (String) parent.getItemAtPosition(position));
                 //String title =(String)parent.getItemAtPosition(position);
                 //Log.v(TAG,title+" ---------------------------------------");
                 startActivity(myIntent);
@@ -56,6 +60,7 @@ public class SuggestionActivity extends Activity {
     }
 
     private void use_json_object(String movieUrl) {
+        if (isNetworkAvailable()){
         JsonObjectRequest jsObjRequest = new JsonObjectRequest(com.android.volley.Request.Method.GET, movieUrl,
                 new com.android.volley.Response.Listener<JSONObject>() {
                     @Override
@@ -76,8 +81,8 @@ public class SuggestionActivity extends Activity {
                                 @Override
                                 public void run() {
                                     ArrayAdapter<String> adapter = new ArrayAdapter<String>(SuggestionActivity.this,
-                                    android.R.layout.simple_list_item_1,
-                                    Movielist);
+                                            android.R.layout.simple_list_item_1,
+                                            Movielist);
                                     mListView.setAdapter(adapter);
                                 }
                             });
@@ -98,6 +103,25 @@ public class SuggestionActivity extends Activity {
         //Volley.newRequestQueue(this).add(jsObjRequest);
         //Volley.newRequestQueue(this).stop();
         //get_movie_details(movie_list);
+    }
+        else{
+            alertUserAboutError();
+        }
+    }
+    private void alertUserAboutError() {
+        AlertDialogFragment dialog = new AlertDialogFragment();
+        dialog.show(getFragmentManager(), "error_dialog");
+    }
+
+    private boolean isNetworkAvailable() {
+        ConnectivityManager manager = (ConnectivityManager) getSystemService(Context.CONNECTIVITY_SERVICE);
+        NetworkInfo networkInfo = manager.getActiveNetworkInfo();
+        if(networkInfo != null && networkInfo.isConnected()){
+            return true;
+        }
+        else{
+            return false;
+        }
     }
 
 

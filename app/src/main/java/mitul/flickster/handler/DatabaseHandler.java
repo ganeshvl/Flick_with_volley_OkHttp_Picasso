@@ -5,6 +5,7 @@ import android.database.Cursor;
 
 import java.sql.SQLException;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
 
 import mitul.flickster.db.MovieDataSource;
@@ -54,12 +55,46 @@ public class DatabaseHandler extends RequestHandler {
             movie_list.add(flick);
             cursor.moveToNext();
         }
-        mMovieDataSource.close();
-
-        if (movieDatabase.containsKey(request)) {
-            System.out.println("Movie found");
+        mMovieDataSource.close();/*
+        boolean found = false;
+        Flick movie = new Flick();
+        for(int i =0; i< movie_list.size();i++){
+            Flick f = movie_list.get(i);
+            if(f.getTitle().equalsIgnoreCase(request)){
+                movie_list.remove(i);
+                movie = f;
+                found = true;
+                break;
+            }
+        }
+        if (found){
+            movie_list.add(movie);
+            Collections.reverse(movie_list);
             return 1;
-        } else {
+        }
+        */
+        if (movieDatabase.containsKey(request)) {
+          System.out.println("Movie found");
+            /*
+            boolean found = false;
+            Flick movie = new Flick();
+            for(int i =0; i< movie_list.size();i++){
+                Flick f = movie_list.get(i);
+                if(f.getTitle().equalsIgnoreCase(request)){
+                    movie_list.remove(i);
+                    movie = f;
+                    found = true;
+                    break;
+                }
+                if(found){
+                    movie_list.add(movie);
+                    Collections.reverse(movie_list);
+                }
+            }
+            */
+            return 1;
+        }
+        else {
             System.out.println("Movie Not found");
             ApiCallHandler api = new ApiCallHandler();
             api.handleRequest(request);
@@ -71,7 +106,20 @@ public class DatabaseHandler extends RequestHandler {
     public Flick fetch_movie(String request) {
         return this.movieDatabase.get(request);
     }
-    public  ArrayList<Flick> getMovie_list(){
+    public  ArrayList<Flick> getMovie_list(String request){
+            Flick movie = new Flick();
+            for(int i =0; i< movie_list.size();i++){
+                Flick f = movie_list.get(i);
+                if(f.getTitle().equalsIgnoreCase(request)){
+                    movie_list.remove(i);
+                    movie = f;
+                    movie_list.add(movie);
+                    Collections.reverse(movie_list);
+                    break;
+                }
+
+            }
+
         return movie_list;
     }
 }

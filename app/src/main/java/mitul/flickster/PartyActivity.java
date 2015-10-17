@@ -9,6 +9,7 @@ import android.database.Cursor;
 import android.net.Uri;
 import android.os.Bundle;
 import android.provider.ContactsContract;
+import android.util.Log;
 import android.view.View;
 import android.widget.AdapterView;
 import android.widget.Button;
@@ -18,21 +19,32 @@ import android.widget.TextView;
 import android.widget.TimePicker;
 import android.widget.Toast;
 
+import com.firebase.client.DataSnapshot;
+import com.firebase.client.Firebase;
+import com.firebase.client.FirebaseError;
+import com.firebase.client.ValueEventListener;
+
+import java.sql.SQLException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Calendar;
+import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Locale;
 
+import mitul.flickster.db.PartyDataSource;
+import mitul.flickster.db.PartyHelper;
 import mitul.flickster.model.ContactList;
 import mitul.flickster.model.Flick;
+import mitul.flickster.model.Invitation;
 import mitul.flickster.model.MovieParty;
 
 public class PartyActivity  extends Activity implements AdapterView.OnItemSelectedListener {
     private TextView movie_title;
     private EditText date;
     private EditText time;
-    private TextView rating_see;
+    private EditText party_title;
+    private EditText location;
     private Flick movieObject;
     private MovieParty movie_party;
     private Button contacts;
@@ -41,31 +53,100 @@ public class PartyActivity  extends Activity implements AdapterView.OnItemSelect
     public final int PICK_CONTACTS = 100;
     private TextView people;
     private Button deleteButton;
+    private Button invitationButton;
     public static final String TAG = PartyActivity.class.getSimpleName();
+    private PartyDataSource mPartyDataSource;
+    private HashMap<String,MovieParty> party_list ;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_party);
+        Firebase.setAndroidContext(this);
         movieObject = (Flick) getIntent().getParcelableExtra(MovieDetailActivity.MOVIE_PARTY);
         movie_party = new MovieParty(movieObject);
-        movie_party.setCurrent_rating();
+        mPartyDataSource = new PartyDataSource(getApplicationContext());
+        //movie_party.setCurrent_rating();
         initialize();
-        rating_see.setText(String.valueOf(movie_party.getCurrent_rating()));
-        movie_title.setText((CharSequence)movie_party.getMovieName());
+        //rating_see.setText(String.valueOf(movie_party.getCurrent_rating()));
+        movie_title.setText((CharSequence) movie_party.getMovieName());
         setCurrentDateOnView();
         setCurrentTimeOnView();
         addContacts();
         addListenerToButton(contacts);
         addListenerToDeleteButton();
+        addListenerToInvButton();
+        HashMap<String,MovieParty> archive = pickAllmovies();
+        if(archive.containsKey(movie_party.getMovieName())){
+            Log.v(TAG,"==============Matching Movie======");
+            Log.v(TAG, archive.get(movie_party.getMovieName()).getNamesList());
+            Log.v(TAG, archive.get(movie_party.getMovieName()).getEmailList());
+            if(archive.get(movie_party.getMovieName()) != null){
+                updateUI(archive.get(movie_party.getMovieName()));
+            }
+        }
+    }
+
+    private void updateUI(MovieParty movieParty) {
+
+        date.setText(movieParty.getDate());
+        time.setText(movieParty.getTime());
+        party_title.setText(movie_party.getParty_title());
+        people.setText(movieParty.getEmailList());
+        location.setText(movieParty.getLocation());
 
     }
+
+    private HashMap<String,MovieParty> pickAllmovies() {
+        party_list = new HashMap<>();
+        PartyDataSource dataSource = new PartyDataSource(getApplicationContext());
+        try {
+            dataSource.open();
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        Cursor cursor = dataSource.selectAllParties();
+        MovieParty movie_party;
+        //cursor.moveToFirst();
+        cursor.moveToLast();
+        while(!cursor.isBeforeFirst()){
+            //while(!cursor.isAfterLast()){
+            Flick flick = new Flick();
+            movie_party = new MovieParty();
+            //int i = cursor.getColumnIndex(MovieHelper.COLUMN_TITLE);
+            //mTitles.add(cursor.getString(i));
+            Log.v(TAG, cursor.getString(cursor.getColumnIndex(PartyHelper.COLUMN_NAME)));
+            movie_party.setMovieName(cursor.getString(cursor.getColumnIndex(PartyHelper.COLUMN_TITLE)));
+            movie_party.setParty_title(cursor.getString(cursor.getColumnIndex(PartyHelper.COLUMN_PARTYTITLE)));
+            movie_party.setContactEmail(cursor.getString(cursor.getColumnIndex(PartyHelper.COLUMN_ADDRESS)));
+            movie_party.setNames(cursor.getString(cursor.getColumnIndex(PartyHelper.COLUMN_NAME)));
+            movie_party.setLocation(cursor.getString(cursor.getColumnIndex(PartyHelper.COLUMN_VENUE)));
+            movie_party.setDate(cursor.getString(cursor.getColumnIndex(PartyHelper.COLUMN_DATE)));
+            movie_party.setTime(cursor.getString(cursor.getColumnIndex(PartyHelper.COLUMN_TIME)));
+            party_list.put(movie_party.getMovie_name(),movie_party);
+
+            Log.v(TAG,cursor.getString(cursor.getColumnIndex(PartyHelper.COLUMN_ADDRESS)));
+            Log.v(TAG, cursor.getString(cursor.getColumnIndex(PartyHelper.COLUMN_DATE)));
+            Log.v(TAG, cursor.getString(cursor.getColumnIndex(PartyHelper.COLUMN_TIME)));
+            Log.v(TAG, cursor.getString(cursor.getColumnIndex(PartyHelper.COLUMN_VENUE)));
+            Log.v(TAG, cursor.getString(cursor.getColumnIndex(PartyHelper.COLUMN_TITLE)));
+            Log.v(TAG, cursor.getString(cursor.getColumnIndex(PartyHelper.COLUMN_ID)));
+            Log.v(TAG, cursor.getString(cursor.getColumnIndex(PartyHelper.COLUMN_IMDB)));
+            Log.v(TAG, cursor.getString(cursor.getColumnIndex(PartyHelper.COLUMN_PARTYTITLE)));
+
+            //cursor.moveToNext();
+            cursor.moveToPrevious();
+        }
+        dataSource.close();
+        return party_list;
+    }
+
     private void addListenerToDeleteButton() {
         View.OnClickListener listener = new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                 movie_party.delete();
-                ArrayList<String> contact_list = movie_party.getContacts();
+                ArrayList<String> contact_list = movie_party.getContactsEmail();
                 Iterator<String> itr = contact_list.iterator();
                 String con = "";
                 while(itr.hasNext()){
@@ -78,6 +159,7 @@ public class PartyActivity  extends Activity implements AdapterView.OnItemSelect
     }
 
     private void addContacts() {
+
 
         ContactList mitul = new ContactList("Mitul Manish",
                 "0451754624",
@@ -149,7 +231,47 @@ public class PartyActivity  extends Activity implements AdapterView.OnItemSelect
                 "zero@gmail.com",
                 "Mayer",
                 "Growth hacker");
+        ContactList Keith = new ContactList("Keith Z",
+                "678906728",
+                "045190008289",
+                "888894q87979",
+                "keith@gmail.com",
+                "XYTRT",
+                "Scala");
+        ContactList Chan = new ContactList("Chan",
+                "6789067280",
+                "0451900082089",
+                "888894q879709",
+                "chan@gmail.com",
+                "XYT",
+                "ScalaY");
+        ContactList Larry = new ContactList("Larry",
+                "8989",
+                "60808",
+                "38987",
+                "larry@gmail.com",
+                "TYTT",
+                "UUYUYU"
+                );
+        ContactList Jimmy = new ContactList("Jimmy",
+                "87878090787",
+                "8989898-90-99",
+                "08090890880808",
+                "jimmy@gmail.com",
+                "XXXXX",
+                "YYYYYYYYY"
+        );
+        ContactList Sumit = new ContactList("Sumit",
+                "11118787",
+                "777778989",
+                "080980000808",
+                "sumit.sonal@gmail.com",
+                "Myntra",
+                "Marketing"
+        );
+
         ArrayList<ContactList> my_contacts = new ArrayList<ContactList>();
+
         my_contacts.add(mitul);
         my_contacts.add(bijin);
         my_contacts.add(Shal);
@@ -160,9 +282,13 @@ public class PartyActivity  extends Activity implements AdapterView.OnItemSelect
         my_contacts.add(Mr_S);
         my_contacts.add(Mr_P);
         my_contacts.add(Mr_Z);
+        my_contacts.add(Keith);
+        my_contacts.add(Chan);
+        my_contacts.add(Larry);
+        my_contacts.add(Jimmy);
+        my_contacts.add(Sumit);
 
 
-        // ArrayList<ContentProviderOperation> ops = new ArrayList<>();
 
         Iterator<ContactList> itr = my_contacts.iterator();
         while (itr.hasNext()) {
@@ -184,22 +310,26 @@ public class PartyActivity  extends Activity implements AdapterView.OnItemSelect
                         .withValue(
                                 ContactsContract.CommonDataKinds.StructuredName.DISPLAY_NAME,
                                 element.getDisplayName()).build());
+
             }
 
+
             //------------------------------------------------------ Mobile Number
+
             if (element.getMobileNumber()!= null) {
                 ops.add(ContentProviderOperation.
                         newInsert(ContactsContract.Data.CONTENT_URI)
                         .withValueBackReference(ContactsContract.Data.RAW_CONTACT_ID, 0)
                         .withValue(ContactsContract.Data.MIMETYPE,
                                 ContactsContract.CommonDataKinds.Phone.CONTENT_ITEM_TYPE)
-                        .withValue(ContactsContract.CommonDataKinds.Phone.NUMBER,element.getMobileNumber())
+                        .withValue(ContactsContract.CommonDataKinds.Phone.NUMBER, element.getEmailID())
                         .withValue(ContactsContract.CommonDataKinds.Phone.TYPE,
                                 ContactsContract.CommonDataKinds.Phone.TYPE_MOBILE)
                         .build());
             }
 
             //------------------------------------------------------ Home Numbers
+/*
             if (element.getHomeNumber()!= null) {
                 ops.add(ContentProviderOperation.newInsert(ContactsContract.Data.CONTENT_URI)
                         .withValueBackReference(ContactsContract.Data.RAW_CONTACT_ID, 0)
@@ -222,8 +352,9 @@ public class PartyActivity  extends Activity implements AdapterView.OnItemSelect
                                 ContactsContract.CommonDataKinds.Phone.TYPE_WORK)
                         .build());
             }
-
+*/
             //------------------------------------------------------ Email
+            /*
             if (element.getEmailID() != null) {
                 ops.add(ContentProviderOperation.newInsert(ContactsContract.Data.CONTENT_URI)
                         .withValueBackReference(ContactsContract.Data.RAW_CONTACT_ID, 0)
@@ -246,7 +377,7 @@ public class PartyActivity  extends Activity implements AdapterView.OnItemSelect
                         .withValue(ContactsContract.CommonDataKinds.Organization.TYPE, ContactsContract.CommonDataKinds.Organization.TYPE_WORK)
                         .build());
             }
-
+            */
             // Asking the Contact provider to create a new contact
             try {
                 getContentResolver().applyBatch(ContactsContract.AUTHORITY, ops);
@@ -256,26 +387,67 @@ public class PartyActivity  extends Activity implements AdapterView.OnItemSelect
                 Toast.makeText(PartyActivity.this, "Exception: " + e.getMessage(), Toast.LENGTH_LONG).show();
             }
             ops.clear();
+
         }
     }
     private void initialize() {
         date = (EditText) findViewById(R.id.date);
         time = (EditText) findViewById(R.id.time);
-        rating_see = (TextView)findViewById(R.id.rate);
+        party_title = (EditText) findViewById(R.id.party_title);
+        //rating_see = (TextView)findViewById(R.id.rate);
         contacts = (Button) findViewById(R.id.contacts);
         movie_title = (TextView) findViewById(R.id.PartyMovie);
         people = (TextView) findViewById(R.id.people);
         deleteButton = (Button) findViewById(R.id.delete);
+        location = (EditText) findViewById(R.id.venue);
+        invitationButton = (Button) findViewById(R.id.buttonInvitation);
     }
     public void addListenerToButton(Button contacts){
         View.OnClickListener listener = new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                 Intent i = new Intent(Intent.ACTION_PICK, ContactsContract.CommonDataKinds.Phone.CONTENT_URI);
-                startActivityForResult(i,101);
+                startActivityForResult(i, 101);
+
             }
         };
         contacts.setOnClickListener(listener);
+    }
+    public void addListenerToInvButton(){
+
+        View.OnClickListener listener = new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                movie_party.setDate(date.getText().toString());
+                movie_party.setParty_title(party_title.getText().toString());
+                movie_party.setTime(time.getText().toString());
+                movie_party.setLocation(location.getText().toString());
+                mPartyDataSource.insertParty(movie_party);
+                //mPartyDataSource.selectAllParties();
+                Invitation invitation = new Invitation(movie_party.getParty_title(),movie_party.getMovieID(),
+                        movie_party.getMovieName(),movie_party.getNamesList(),movie_party.getEmailList(),
+                        movie_party.getDate(),movie_party.getTime(),movie_party.getLocation());
+
+                //Firebase myFirebaseRef = new Firebase("https://resplendent-heat-626.firebaseio.com/");
+                Firebase ref = new Firebase("https://resplendent-heat-626.firebaseio.com/android/saving-data/flickster");
+                Firebase alanRef = ref.child("invitations").child(invitation.getParty_title());
+                alanRef.setValue(invitation);
+                ref.child("invitations").addValueEventListener(new ValueEventListener() {
+
+                    @Override
+                    public void onDataChange(DataSnapshot snapshot) {
+                        System.out.println(snapshot.getValue());  //prints "Do you have data? You'll love Firebase."
+                    }
+
+                    @Override
+                    public void onCancelled(FirebaseError error) {
+                    }
+
+                });
+
+            }
+        };
+        invitationButton.setOnClickListener(listener);
     }
 
     public void setCurrentDateOnView() {
@@ -320,9 +492,7 @@ public class PartyActivity  extends Activity implements AdapterView.OnItemSelect
     @Override
     public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
         String selectedItem = parent.getItemAtPosition(position).toString();
-        Toast.makeText(PartyActivity.this,
-                String.valueOf(selectedItem),
-                Toast.LENGTH_LONG).show();
+
     }
 
     @Override
@@ -331,15 +501,43 @@ public class PartyActivity  extends Activity implements AdapterView.OnItemSelect
     }
 
     @Override
+    protected void onResume(){
+        super.onResume();
+        try {
+            mPartyDataSource.open();
+            Log.v(TAG, "---------- Database succesfully created -------------");
+            //loadMovieData();
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+
+    }
+    @Override
+    protected void onPause(){
+        super.onPause();
+
+        mPartyDataSource.close();
+    }
+
+    @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
         if (resultCode == RESULT_OK) {
             Uri uri = data.getData();
             Cursor cursor = getContentResolver().query(uri, null, null, null, null);
             cursor.moveToFirst();
-            int contactIndex = cursor.getColumnIndex(ContactsContract.Contacts.DISPLAY_NAME);
-            movie_party.setContactName(cursor.getString(contactIndex));
-            ArrayList<String> contact_list = movie_party.getContacts();
-            Iterator<String> itr = contact_list.iterator();
+            int NameIndex = cursor.getColumnIndex(ContactsContract.Contacts.DISPLAY_NAME);
+            int emailIndex = cursor.getColumnIndex(ContactsContract.CommonDataKinds.Phone.NUMBER);
+            Log.v(TAG,cursor.getString(NameIndex)+"----name------");
+            Log.v(TAG,cursor.getString(emailIndex)+"----Email------");
+            movie_party.setContactEmail(cursor.getString(emailIndex));
+            movie_party.setNames(cursor.getString(NameIndex));
+
+            Log.v(TAG, cursor.getString(emailIndex));
+            Log.v(TAG,cursor.getString(NameIndex));
+            ArrayList<String> contact_list = movie_party.getContactsEmail();
+            ArrayList<String> names = movie_party.getContactsEmail();
+            //Iterator<String> itr = contact_list.iterator();
+            Iterator<String> itr = names.iterator();
             String con = "";
             while (itr.hasNext()) {
                 con = con + itr.next() + " ";
@@ -348,5 +546,7 @@ public class PartyActivity  extends Activity implements AdapterView.OnItemSelect
         }
 
     }
+
+
 
 }

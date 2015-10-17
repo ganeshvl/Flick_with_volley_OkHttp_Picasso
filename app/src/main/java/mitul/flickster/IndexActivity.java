@@ -66,11 +66,12 @@ public class IndexActivity extends Activity {
                 //h1.handleRequest(search_term);
                 RequestHandler h2 = new ApiCallHandler();
                 h1.setSuccessor(h2);
-                int i= h1.handleRequest(search_term);
+                int i= h1.handleRequest(search_term.toLowerCase());
                 if(i == 1){
                     Flick f = h1.fetch_movie(search_term);
                     ArrayList<Flick> list = new ArrayList<>();
-                    list = h1.getMovie_list();
+                    list = h1.getMovie_list(search_term);
+
                     //
                     //Intent intent1 = new Intent(v.getContext(),MyMovieListActivity.class);
                     //intent1.putExtra("data", new MovieWrapper(list));

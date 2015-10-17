@@ -14,6 +14,7 @@ import com.android.volley.toolbox.ImageLoader;
 import com.android.volley.toolbox.NetworkImageView;
 
 import java.sql.SQLException;
+import java.util.HashMap;
 
 import butterknife.ButterKnife;
 import butterknife.InjectView;
@@ -41,7 +42,8 @@ public class MovieDetailActivity extends Activity {
     private float current_rating ;
     private Flick myObject;
     public static final String MOVIE_PARTY= "MOVIE_PARTY";
-
+    public static HashMap<String,Float> rating_map = new HashMap<String,Float>();
+    private String myID;
 
 
     @Override
@@ -51,12 +53,45 @@ public class MovieDetailActivity extends Activity {
         ButterKnife.inject(this);
         mDataSource = new MovieDataSource(MovieDetailActivity.this);
         myObject = (Flick) getIntent().getParcelableExtra(MyMovieListActivity.MOVIE_OBJECT);
+        myID = myObject.getImdbId();
         if(myObject!=null)
         {title.setText((CharSequence) myObject.getTitle());}
+        //updateDisplay(myObject.getImdbId());
         updateDisplay(myObject);
         ListenerOnPartyButton();
-        setListenerOnRatingBar();
+        addListenerOnRatingBar();
+        setRating(myObject);
     }
+    private void setRating(Flick f) {
+        if (!rating_map.containsKey(f.getImdbId())){
+            rating_map.put(f.getImdbId(),f.getImdbRating());
+            Log.v(TAG,f.getImdbRating()+"");
+            ratingBar.setRating(rating_map.get(f.getImdbId()));
+        }
+        else{
+            float r= rating_map.get(f.getImdbId());
+            ratingBar.setRating(r);
+        }
+    }
+    public void addListenerOnRatingBar(){
+
+        ratingBar.setOnRatingBarChangeListener(new RatingBar.OnRatingBarChangeListener() {
+            @Override
+            public void onRatingChanged(RatingBar ratingBar, float rating, boolean fromUser) {
+                myObject.setImdbRating(ratingBar.getRating() + "");
+                rating_map.put(myID, ratingBar.getRating());
+                //mDataSource.updateRating(ratingBar.getRating()+"",myID);
+                updateRatingDatabase();
+
+            }
+        });
+    }
+
+    private void updateRatingDatabase() {
+       // mDataSource = new MovieDataSource(MovieDetailActivity.this);
+        //mDataSource.updateRating(String.valueOf(ratingBar.getRating()),myID);
+    }
+
 
     private void ListenerOnPartyButton() {
         PartyButton.setOnClickListener(new View.OnClickListener() {
@@ -69,16 +104,7 @@ public class MovieDetailActivity extends Activity {
             }
         });
     }
-    private void setListenerOnRatingBar() {
-        View.OnClickListener listener = new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                Log.v(TAG,ratingBar.getRating()+"");
-                //mDataSource.updateRating(current_rating + "", myObject.getImdbId());
-            }
-        };
-        ratingBar.setOnClickListener(listener);
-    }
+
 
 /*
     private void use_json_object(String movieUrl) {
@@ -249,8 +275,8 @@ public class MovieDetailActivity extends Activity {
         //Picasso.with(MovieDetailActivity.this).load(movie.getPoster()).into(poster);
         title.setText(movie.getTitle());
 
-        if (movie.getPlot().length() >= 375) {
-            plot.setText("Plot: " + movie.getPlot().substring(0,375)+"...");
+        if (movie.getPlot().length() >= 550) {
+            plot.setText("Plot: " + movie.getPlot().substring(0,550)+"...");
         }
         else {
             plot.setText("Plot: " + movie.getPlot());
@@ -259,7 +285,7 @@ public class MovieDetailActivity extends Activity {
         director.setText("Director: " + movie.getDirector());
         release_date.setText("Released: " + movie.getReleased());
         Genre.setText("Genre: " + movie.getGenre());
-        ratingBar.setRating(movie.getImdbRating());
+        //ratingBar.setRating(movie.getImdbRating());
         ContentType.setText(movie.getRated());
         title.setText(movie.getTitle());
 
@@ -283,6 +309,7 @@ public class MovieDetailActivity extends Activity {
     @Override
     protected void onPause(){
         super.onPause();
+
         mDataSource.close();
     }
 }

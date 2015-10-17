@@ -89,5 +89,12 @@ public class MovieDataSource {
         ) ;
         return cursor;
     }
+    public void deleteAll() {
+        mDatabase.delete(
+                MovieHelper.TABLE_MOVIES, // table
+                null, // where clause
+                null  // where params
+        );
+    }
 
 }
